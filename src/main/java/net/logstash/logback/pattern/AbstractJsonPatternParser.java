@@ -46,7 +46,7 @@ public abstract class AbstractJsonPatternParser<Event> {
     
     private final ContextAware contextAware;
     private final JsonFactory jsonFactory;
-    
+    public static boolean omitFieldsWithNullValue = true;
     private final Map<String, Operation> operations = new HashMap<String, Operation>();
 
     public AbstractJsonPatternParser(final ContextAware contextAware, final JsonFactory jsonFactory) {
@@ -261,7 +261,14 @@ public abstract class AbstractJsonPatternParser<Event> {
         }
 
         public void write(JsonGenerator generator, Event event) throws IOException {
-            generator.writeObject(value);
+            if(!omitFieldsWithNullValue) {
+                generator.writeObject(value);
+            }else
+            {
+                if(value!=null){
+                    generator.writeObject(value);
+                }
+            }
         }
     }
 
@@ -291,7 +298,13 @@ public abstract class AbstractJsonPatternParser<Event> {
 
         public void write(JsonGenerator generator, Event event) throws IOException {
             Object value = getter.getValue(event);
-            generator.writeObject(value);
+            if(!omitFieldsWithNullValue) {
+                generator.writeObject(value);
+            }else{
+                if(value!=null){
+                    generator.writeObject(value);
+                }
+            }
         }
     }
 
@@ -323,8 +336,15 @@ public abstract class AbstractJsonPatternParser<Event> {
 
         public void write(JsonGenerator generator, Event event) throws IOException {
             Object value = getter.getValue(event);
-            generator.writeFieldName(name);
-            generator.writeObject(value);
+            if(!omitFieldsWithNullValue) {
+                generator.writeFieldName(name);
+                generator.writeObject(value);
+            }else{
+                if(value!=null){
+                    generator.writeFieldName(name);
+                    generator.writeObject(value);
+                }
+            }
         }
     }
 

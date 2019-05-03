@@ -79,22 +79,33 @@ public abstract class AbstractJsonPatternParserTest<Event> {
 
     protected void verifyFields(String patternJson, String expectedJson) throws IOException {
 
-        Map<String, Object> actualResult = parseJson(process(patternJson));
+        verifyFields(patternJson, expectedJson, false);
+    }
+
+    protected void verifyFields(String patternJson, String expectedJson, boolean omitNulls) throws IOException {
+
+        Map<String, Object> actualResult = parseJson(process(patternJson,omitNulls));
         Map<String, Object> expectedResult = parseJson(expectedJson);
 
         assertThat(actualResult).isEqualTo(expectedResult);
     }
 
     private String process(final String patternJson) throws IOException {
+        return process(patternJson, false);
+    }
+
+    private String process(final String patternJson, boolean omitNull) throws IOException{
+        parser.omitFieldsWithNullValue=omitNull;
         NodeWriter<Event> root = parser.parse(patternJson);
         assertThat(root).isNotNull();
-        
+
         jsonGenerator.writeStartObject();
         root.write(jsonGenerator, event);
         jsonGenerator.writeEndObject();
         jsonGenerator.flush();
 
         return buffer.toString();
+
     }
 
     @Test
@@ -119,6 +130,29 @@ public abstract class AbstractJsonPatternParserTest<Event> {
                 + "}";
 
         verifyFields(pattern, expected);
+    }
+
+    @Test
+    public void shouldKeepPrimitiveConstantValuesOmitNulls() throws IOException {
+
+        String pattern = ""
+                + "{\n"
+                + "    \"const\": null,\n"
+                + "    \"string\": \"value\",\n"
+                + "    \"integer\": 1024,\n"
+                + "    \"double\": 0.1,\n"
+                + "    \"bool\": false\n"
+                + "}";
+
+        String expected = ""
+                + "{\n"
+                + "    \"string\": \"value\",\n"
+                + "    \"integer\": 1024,\n"
+                + "    \"double\": 0.1,\n"
+                + "    \"bool\": false\n"
+                + "}";
+
+        verifyFields(pattern, expected,true);
     }
 
     @Test

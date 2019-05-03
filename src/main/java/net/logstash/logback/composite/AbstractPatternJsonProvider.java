@@ -40,7 +40,7 @@ public abstract class AbstractPatternJsonProvider<Event extends DeferredProcessi
     private NodeWriter<Event> nodeWriter;
     
     private String pattern;
-
+    private boolean omitNullValues = false;
     protected JsonFactory jsonFactory;
 
     @Override
@@ -56,6 +56,10 @@ public abstract class AbstractPatternJsonProvider<Event extends DeferredProcessi
         return pattern;
     }
 
+    public void setOmitNullValues(boolean omitNullValues){
+        this.omitNullValues = omitNullValues;
+    }
+    
     public void setPattern(final String pattern) {
         this.pattern = pattern;
         parse();
@@ -76,6 +80,7 @@ public abstract class AbstractPatternJsonProvider<Event extends DeferredProcessi
     private void parse() {
         if (pattern != null && jsonFactory != null) {
             AbstractJsonPatternParser<Event> parser = createParser();
+            parser.omitFieldsWithNullValue = omitNullValues;
             nodeWriter = parser.parse(pattern);
         }
     }
