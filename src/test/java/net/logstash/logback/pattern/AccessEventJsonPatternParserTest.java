@@ -77,4 +77,21 @@ public class AccessEventJsonPatternParserTest extends AbstractJsonPatternParserT
 
         verifyFields(pattern, expected);
     }
+
+    @Test
+    public void noNaOperationShouldNullifySingleDashOmitNulls() throws IOException {
+
+        String pattern = ""
+                + "{\n"
+                + "    \"cookie1\": \"%requestAttribute{MISSING}\",\n"
+                + "    \"cookie2\": \"#nullNA{%requestAttribute{MISSING}}\"\n"
+                + "}";
+
+        String expected = ""
+                + "{\n"
+                + "    \"cookie1\": \"-\"\n"
+                + "}";
+
+        verifyFields(pattern, expected, true);
+    }
 }

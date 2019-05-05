@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 
 /**
  * Parser that takes a JSON pattern, resolves all the conversion specifiers and returns an instance
@@ -265,7 +266,7 @@ public abstract class AbstractJsonPatternParser<Event> {
                 generator.writeObject(value);
             }else
             {
-                if(value!=null){
+                if(value!=null && !(value instanceof NullNode)){
                     generator.writeObject(value);
                 }
             }
@@ -340,7 +341,7 @@ public abstract class AbstractJsonPatternParser<Event> {
                 generator.writeFieldName(name);
                 generator.writeObject(value);
             }else{
-                if(value!=null){
+                if(value!=null && !(value instanceof NullNode) && !((value instanceof String) && ((String) value).length()==0)){
                     generator.writeFieldName(name);
                     generator.writeObject(value);
                 }
@@ -452,12 +453,22 @@ public abstract class AbstractJsonPatternParser<Event> {
 
             String key = field.getKey();
             JsonNode value = field.getValue();
-
-            if (value.isTextual()) {
-                ValueGetter<?, Event> getter = makeComputableValueGetter(value.asText());
-                children.add(new ComputableObjectFieldWriter<Event>(key, getter));
-            } else {
-                children.add(new DelegatingObjectFieldWriter<Event>(key, parseValue(value)));
+            if(!omitFieldsWithNullValue) {
+                if (value.isTextual()) {
+                    ValueGetter<?, Event> getter = makeComputableValueGetter(value.asText());
+                    children.add(new ComputableObjectFieldWriter<Event>(key, getter));
+                } else {
+                    children.add(new DelegatingObjectFieldWriter<Event>(key, parseValue(value)));
+                }
+            }else{
+                if(value!=null && !(value instanceof NullNode)){
+                    if (value.isTextual()) {
+                        ValueGetter<?, Event> getter = makeComputableValueGetter(value.asText());
+                        children.add(new ComputableObjectFieldWriter<Event>(key, getter));
+                    } else {
+                        children.add(new DelegatingObjectFieldWriter<Event>(key, parseValue(value)));
+                    }
+                }
             }
         }
         return new ChildrenWriter<Event>(children);

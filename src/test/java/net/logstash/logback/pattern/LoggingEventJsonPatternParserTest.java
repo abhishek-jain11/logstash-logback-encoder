@@ -41,6 +41,7 @@ public class LoggingEventJsonPatternParserTest extends AbstractJsonPatternParser
     protected ILoggingEvent createEvent() {
         mdc.put("key1", "value1");
         mdc.put("key2", "value2");
+        mdc.put("key3", null);
         given(event.getMDCPropertyMap()).willReturn(mdc);
         given(event.getLevel()).willReturn(Level.DEBUG);
         return event;
@@ -82,4 +83,24 @@ public class LoggingEventJsonPatternParserTest extends AbstractJsonPatternParser
 
         verifyFields(pattern, expected);
     }
+
+    @Test
+    public void shouldAllowIndividualMdcItemsWithNullToBeIncludedUsingConverter() throws IOException {
+
+        String pattern = ""
+                + "{\n"
+                + "    \"mdc.key1\": \"%mdc{key1}\",\n"
+                + "    \"mdc.key3\": \"%mdc{key3}\",\n"
+                + "    \"mdc.key2\": \"%mdc{key2}\"\n"
+                + "}";
+
+        String expected = ""
+                + "{\n"
+                + "    \"mdc.key1\": \"value1\",\n"
+                + "    \"mdc.key2\": \"value2\"\n"
+                + "}";
+
+        verifyFields(pattern, expected, true);
+    }
+
 }

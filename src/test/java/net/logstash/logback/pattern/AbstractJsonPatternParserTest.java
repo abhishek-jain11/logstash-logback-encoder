@@ -264,11 +264,11 @@ public abstract class AbstractJsonPatternParserTest<Event> {
                 + "    \"key5\": [1, 2],\n"
                 + "    \"key6\": [1, \"2\"],\n"
                 + "    \"key7\": {\"field\":\"value\"},\n"
-                + "    \"key8\": {\"field\":\"value\", \"num\":123},\n"
-                + "    \"key9\": null\n"
+                + "    \"key8\": {\"field\":\"value\", \"num\":123}\n"
+
                 + "}";
 
-        verifyFields(pattern, expected);
+        verifyFields(pattern, expected, true);
     }
 
     @Test
@@ -289,7 +289,8 @@ public abstract class AbstractJsonPatternParserTest<Event> {
                 + "    \"key11\": \"#tryJson{ false }\",\n"
                 + "    \"key12\": \"#tryJson{ false true}\",\n"
                 + "    \"key13\": \"#tryJson{123 foo}\",\n"
-                + "    \"key14\": \"#tryJson{ 123 }\"\n"
+                + "    \"key14\": \"#tryJson{ 123 }\",\n"
+                + "    \"key15\": \"#tryJson{[]}\"\n"
                 + "}";
 
         String expected = ""
@@ -307,10 +308,11 @@ public abstract class AbstractJsonPatternParserTest<Event> {
                 + "    \"key11\": false,\n"
                 + "    \"key12\": \" false true\",\n"
                 + "    \"key13\": \"123 foo\",\n"
-                + "    \"key14\": 123\n"
+                + "    \"key14\": 123,\n"
+                +"     \"key15\": []\n"
                 + "}";
 
-        verifyFields(pattern, expected);
+        verifyFields(pattern, expected, true);
     }
 
     @Test
@@ -333,6 +335,24 @@ public abstract class AbstractJsonPatternParserTest<Event> {
                 + "}";
 
         verifyFields(pattern, expected);
+    }
+
+    @Test
+    public void shouldSendNonTransformableValuesAsNullsOmmitingNulls() throws IOException {
+
+        String pattern = ""
+                + "{\n"
+                + "    \"key1\": \"#asLong{abc}\",\n"
+                + "    \"key2\": \"test\",\n"
+                + "    \"key3\": \"#asDouble{abc}\",\n"
+                + "    \"key4\": \"#asJson{[1, 2}\"\n"
+                + "}";
+
+        String expected = ""
+                + "{\n"
+                + "    \"key2\": \"test\""
+                + "}";
+        verifyFields(pattern, expected, true);
     }
 
     @Test
